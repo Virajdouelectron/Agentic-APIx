@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "project_name": "apix",
+  "workflow": {
+    "auto_commit": true,
+    "commit_style": "conventional",
+    "branch_strategy": "feature-branch",
+    "test_before_commit": true,
+    "one_file_per_commit": true
+  },
+  "preferences": {
+    "language": "python",
+    "python_version": "3.11+",
+    "package_manager": "pip",
+    "test_framework": "pytest",
+    "linter": "ruff",
+    "formatter": "ruff",
+    "type_checker": "mypy"
+  },
+  "git": {
+    "main_branch": "main",
+    "feature_branch": "feature/apix-pipeline",
+    "remote": null,
+    "git_executable": "C:\\Users\\viraj\\AppData\\Local\\GitHubDesktop\\app-3.6.6\\resources\\app\\git\\cmd\\git.exe"
+  },
+  "state": {
+    "current_milestone": "M1",
+    "current_phase": null,
+    "initialized_at": "2026-10-11T23:30:00+05:30"
+  }
+}
