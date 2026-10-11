@@ -1,0 +1,117 @@
+# DGCA City-Pair Routes for APIx
+#
+# Each route represents a directional domestic air corridor.
+# The orchestrator reads this file to generate extraction jobs.
+#
+# Fields:
+#   origin/destination: IATA airport codes
+#   name: Human-readable route label
+#   tier: "metro" (top-20 traffic) or "regional" (smaller corridors)
+#         Tier affects anomaly detection thresholds — metro routes have
+#         tighter bounds because fare data is denser.
+#
+# Source: DGCA domestic traffic reports (manually curated)
+# Update frequency: quarterly or when DGCA publishes new data
+
+routes:
+  # ── Metro trunk routes (highest traffic) ────────────────────────
+  - origin: DEL
+    destination: BOM
+    name: Delhi → Mumbai
+    tier: metro
+
+  - origin: BOM
+    destination: DEL
+    name: Mumbai → Delhi
+    tier: metro
+
+  - origin: DEL
+    destination: BLR
+    name: Delhi → Bengaluru
+    tier: metro
+
+  - origin: BLR
+    destination: DEL
+    name: Bengaluru → Delhi
+    tier: metro
+
+  - origin: DEL
+    destination: HYD
+    name: Delhi → Hyderabad
+    tier: metro
+
+  - origin: HYD
+    destination: DEL
+    name: Hyderabad → Delhi
+    tier: metro
+
+  - origin: BOM
+    destination: BLR
+    name: Mumbai → Bengaluru
+    tier: metro
+
+  - origin: BLR
+    destination: BOM
+    name: Bengaluru → Mumbai
+    tier: metro
+
+  - origin: DEL
+    destination: CCU
+    name: Delhi → Kolkata
+    tier: metro
+
+  - origin: CCU
+    destination: DEL
+    name: Kolkata → Delhi
+    tier: metro
+
+  - origin: DEL
+    destination: MAA
+    name: Delhi → Chennai
+    tier: metro
+
+  - origin: MAA
+    destination: DEL
+    name: Chennai → Delhi
+    tier: metro
+
+  - origin: BOM
+    destination: CCU
+    name: Mumbai → Kolkata
+    tier: metro
+
+  - origin: BOM
+    destination: MAA
+    name: Mumbai → Chennai
+    tier: metro
+
+  # ── Regional routes ─────────────────────────────────────────────
+  - origin: DEL
+    destination: GOI
+    name: Delhi → Goa
+    tier: regional
+
+  - origin: BOM
+    destination: GOI
+    name: Mumbai → Goa
+    tier: regional
+
+  - origin: BLR
+    destination: CCU
+    name: Bengaluru → Kolkata
+    tier: regional
+
+  - origin: DEL
+    destination: JAI
+    name: Delhi → Jaipur
+    tier: regional
+
+  - origin: DEL
+    destination: AMD
+    name: Delhi → Ahmedabad
+    tier: regional
+
+  - origin: BOM
+    destination: HYD
+    name: Mumbai → Hyderabad
+    tier: regional
