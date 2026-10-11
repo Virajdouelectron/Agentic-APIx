@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment & secrets
+.env
+*.pem
+*.key
+
+# Logs
+*.log
+logs/
+
+# Playwright / browser
+browser/
+.cache/
+
+# Data dumps (keep only committed sample data)
+data/*.json
+data/*.parquet
+!data/dgca_weights.csv
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage & testing
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Alembic
+migrations/versions/__pycache__/
+
+# Planning (GSD workflow state — not part of the codebase)
+.planning/
