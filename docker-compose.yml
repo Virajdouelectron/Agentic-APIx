@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL Database ──────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: apix_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: apix
+      POSTGRES_PASSWORD: apix_secret_password
+      POSTGRES_DB: apix
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U apix -d apix"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Backend ──────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: apix_api
+    restart: unless-stopped
+    command: uvicorn apix.agents.server:app --host 0.0.0.0 --port 8000
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://apix:apix_secret_password@postgres:5432/apix
+      - LOG_LEVEL=INFO
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  # ── Interactive Dashboard ────────────────────────────────────────
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: apix_dashboard
+    restart: unless-stopped
+    command: streamlit run apix/dashboard/app.py --server.port=8501 --server.address=0.0.0.0
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://apix:apix_secret_password@postgres:5432/apix
+      - API_BASE_URL=http://api:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+    env_file:
+      - .env
+
+volumes:
+  pgdata:
+    name: apix_postgres_data
