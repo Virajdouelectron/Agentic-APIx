@@ -2,8 +2,8 @@
 
 ## Current Position
 - **Milestone**: M1 — Core Pipeline (MVP)
-- **Phase**: Initialized — ready for Phase 1
-- **Last Action**: Project initialization with GSD new-project
+- **Phase**: Phase 1 Complete (Foundation) — ready for Phase 2 (Extraction Layer)
+- **Last Action**: Completed Phase 1 (Config, Pydantic schemas, SQLAlchemy models, Docker infra, exceptions, tests)
 
 ## Decision Log
 
