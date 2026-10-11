@@ -1,0 +1,97 @@
+# IndiGo Fare Page Selectors
+#
+# These selectors tell the IndiGo extractor where to find fare data
+# on the search results page. When a selector stops matching (site
+# redesign), the extractor falls back to VLM-based visual extraction.
+#
+# Selector types: "css" or "xpath"
+# "fallback_enabled": if true, VLM fallback kicks in when this selector fails
+#
+# IMPORTANT: These selectors are approximations based on typical OTA/airline
+# page structures. They WILL need updating when pointed at the live site.
+# That's the whole point of keeping them in config.
+
+source: indigo
+base_url: https://www.goindigo.in
+
+selectors:
+  # ── Flight list container ───────────────────────────────────────
+  flight_list:
+    type: css
+    value: "div.flight-list, div[data-testid='flight-results']"
+    description: Container holding all flight result cards
+    fallback_enabled: true
+
+  # ── Individual flight card ──────────────────────────────────────
+  flight_card:
+    type: css
+    value: "div.flight-card, div[class*='FlightCard']"
+    description: A single flight option within the results
+    fallback_enabled: true
+
+  # ── Fare components ────────────────────────────────────────────
+  base_fare:
+    type: css
+    value: "span[data-testid='base-fare'], span.base-fare-amount"
+    description: Base fare amount (INR)
+    fallback_enabled: true
+
+  taxes:
+    type: css
+    value: "span[data-testid='taxes'], span.taxes-amount"
+    description: Government taxes and surcharges
+    fallback_enabled: true
+
+  udf:
+    type: css
+    value: "span[data-testid='udf'], span.udf-amount"
+    description: User Development Fee (airport-specific)
+    fallback_enabled: true
+
+  convenience_fee:
+    type: css
+    value: "span[data-testid='convenience-fee'], span.convenience-fee-amount"
+    description: OTA/airline convenience or booking fee
+    fallback_enabled: true
+
+  total_fare:
+    type: css
+    value: "span[data-testid='total-fare'], span.total-price"
+    description: Total displayed price (used for sanity checks)
+    fallback_enabled: true
+
+  # ── Flight metadata ────────────────────────────────────────────
+  flight_number:
+    type: css
+    value: "span.flight-number, span[data-testid='flight-number']"
+    description: Flight number (e.g., 6E-2341)
+    fallback_enabled: false
+
+  departure_time:
+    type: css
+    value: "span.departure-time, span[data-testid='departure-time']"
+    description: Departure time (HH:MM format)
+    fallback_enabled: false
+
+  arrival_time:
+    type: css
+    value: "span.arrival-time, span[data-testid='arrival-time']"
+    description: Arrival time
+    fallback_enabled: false
+
+  airline_name:
+    type: css
+    value: "span.airline-name, img.airline-logo"
+    description: Airline name or logo (should always be IndiGo for this extractor)
+    fallback_enabled: false
+
+# ── VLM fallback prompts ─────────────────────────────────────────
+# When a selector fails and fallback_enabled is true, the extractor
+# takes a screenshot and sends it to the VLM with these prompts.
+vlm_prompts:
+  fare_extraction: >
+    Look at this airline search results screenshot. For each flight shown,
+    extract: flight number, departure time, arrival time, base fare amount,
+    taxes amount, user development fee (UDF), and convenience fee.
+    Return the data as a JSON array. All amounts should be numbers in INR.
+    If a component is not visible, set it to null.
