@@ -65,7 +65,8 @@
 **Deliverables**:
 - `dashboard/app.py` — interactive dashboard
 - Sector heatmaps, APIx trend lines, elasticity curve charts
-**Status**: not-started
+**Status**: completed
+
 
 ### Phase 8: Docker, Tests & README
 **Requirements**: R7.1–R7.5

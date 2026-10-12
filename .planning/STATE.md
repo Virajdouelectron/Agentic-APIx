@@ -2,8 +2,8 @@
 
 ## Current Position
 - **Milestone**: M1 — Core Pipeline (MVP)
-- **Phase**: Phase 6 Complete (API Serving) — ready for Phase 7 (Dashboard)
-- **Last Action**: Completed Phase 6 (FastAPI app, async DB sessions, Alembic migrations, 4 endpoints, OpenAPI docs, 14 async unit tests passing, total 60/60 tests passing)
+- **Phase**: Phase 7 Complete (Dashboard) — ready for Phase 8 (Docker, Final Tests & README)
+- **Last Action**: Completed Phase 7 (Streamlit interactive dashboard, sector heatmaps, APIx trend lines, lead-time elasticity curves, 5 dashboard unit tests passing, total 65/65 tests passing)
 
 ## Decision Log
 
