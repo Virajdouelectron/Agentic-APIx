@@ -10,6 +10,14 @@ Houses the 5 cooperating agents:
 """
 
 from apix.agents.harmonizer import HarmonizationResult, Harmonizer
+from apix.agents.indexer import Indexer, IndexResult
 from apix.agents.orchestrator import Orchestrator, ProxyPool
 
-__all__ = ["HarmonizationResult", "Harmonizer", "Orchestrator", "ProxyPool"]
+__all__ = [
+    "HarmonizationResult",
+    "Harmonizer",
+    "IndexResult",
+    "Indexer",
+    "Orchestrator",
+    "ProxyPool",
+]
