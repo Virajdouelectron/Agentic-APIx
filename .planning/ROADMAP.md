@@ -48,7 +48,7 @@
 - `indexer.py` — DGCA-weighted index, elasticity curves
 - Well-documented methodology with explicit formulas
 - Unit tests with hand-checkable examples (`test_indexer.py`)
-**Status**: not-started
+**Status**: completed
 
 ### Phase 6: API Serving
 **Requirements**: R5.1–R5.4
@@ -57,7 +57,8 @@
 - Pydantic response models
 - Alembic migration setup
 - Health endpoint
-**Status**: not-started
+**Status**: completed
+
 
 ### Phase 7: Dashboard
 **Requirements**: R6.1–R6.4

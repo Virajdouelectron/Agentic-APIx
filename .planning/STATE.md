@@ -2,8 +2,8 @@
 
 ## Current Position
 - **Milestone**: M1 — Core Pipeline (MVP)
-- **Phase**: Phase 4 Complete (Harmonization & Anomaly Agent) — ready for Phase 5 (Quant & Indexing Agent)
-- **Last Action**: Completed Phase 4 (Harmonizer, economic fare definition, cross-source deduplication, MAD/IQR outlier auditing, and non-dropping guarantees)
+- **Phase**: Phase 6 Complete (API Serving) — ready for Phase 7 (Dashboard)
+- **Last Action**: Completed Phase 6 (FastAPI app, async DB sessions, Alembic migrations, 4 endpoints, OpenAPI docs, 14 async unit tests passing, total 60/60 tests passing)
 
 ## Decision Log
 
