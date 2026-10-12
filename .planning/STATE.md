@@ -2,8 +2,8 @@
 
 ## Current Position
 - **Milestone**: M1 — Core Pipeline (MVP)
-- **Phase**: Phase 3 Complete (Orchestrator) — ready for Phase 4 (Harmonization & Anomaly Agent)
-- **Last Action**: Completed Phase 3 (Orchestrator, ProxyPool, concurrency control, exponential backoff, retry management, run summary)
+- **Phase**: Phase 4 Complete (Harmonization & Anomaly Agent) — ready for Phase 5 (Quant & Indexing Agent)
+- **Last Action**: Completed Phase 4 (Harmonizer, economic fare definition, cross-source deduplication, MAD/IQR outlier auditing, and non-dropping guarantees)
 
 ## Decision Log
 
