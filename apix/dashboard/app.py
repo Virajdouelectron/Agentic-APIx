@@ -83,13 +83,18 @@ def render_sidebar():
     backend_url = st.sidebar.text_input("Backend URL", value=API_BASE_URL)
     health = check_api_health(base_url=backend_url)
 
-    if health.get("status") == "healthy":
+    status = health.get("status", "unreachable")
+    if status in ("healthy", "ok"):
         st.sidebar.success(f"Backend Connected ({health.get('version', 'v0.1.0')})")
-        db_state = health.get("database", "unknown")
+        db_state = "Connected" if health.get("database_connected") else "Degraded"
         st.sidebar.caption(f"Database: `{db_state}` | Source: Live API")
+    elif status == "degraded":
+        st.sidebar.info(f"Backend Online ({health.get('version', 'v0.1.0')})")
+        st.sidebar.caption("API active (Standalone mode without Postgres)")
     else:
-        st.sidebar.warning(f"Backend Offline ({health.get('status', 'unreachable')})")
+        st.sidebar.warning(f"Backend Offline ({status})")
         st.sidebar.caption("Operating in High-Fidelity Synthetic Simulation Mode")
+
 
     st.sidebar.markdown("---")
     st.sidebar.info(

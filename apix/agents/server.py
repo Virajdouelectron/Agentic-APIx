@@ -47,10 +47,20 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Manage async resource lifecycle: DB init on startup, cleanup on shutdown."""
     logger.info("APIx server starting — initializing database tables")
-    await init_db()
+    try:
+        await init_db()
+    except Exception as exc:
+        logger.warning(
+            "Database connection failed on startup (%s); continuing in degraded / read-only mode",
+            exc,
+        )
     yield
     logger.info("APIx server shutting down — disposing database connections")
-    await close_db()
+    try:
+        await close_db()
+    except Exception:
+        pass
+
 
 
 # ── App ──────────────────────────────────────────────────────────
