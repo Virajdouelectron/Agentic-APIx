@@ -8,3 +8,7 @@ Houses the 5 cooperating agents:
 4. Indexer: DGCA-weighted economic price indexer and lead-time elasticity modeling
 5. Server: FastAPI application and serving endpoints
 """
+
+from apix.agents.orchestrator import Orchestrator, ProxyPool
+
+__all__ = ["Orchestrator", "ProxyPool"]
