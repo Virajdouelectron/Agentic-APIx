@@ -124,20 +124,22 @@ class Settings(BaseSettings):
     def _load_yaml_configs(self) -> None:
         """Read routes, windows, and selector YAML files into typed models."""
         # Routes
-        routes_path = _CONFIG_DIR / "routes.yaml"
-        if routes_path.exists():
-            with open(routes_path) as f:
-                data = yaml.safe_load(f)
-            self.routes = [RouteConfig(**r) for r in data.get("routes", [])]
+        if not self.routes:
+            routes_path = _CONFIG_DIR / "routes.yaml"
+            if routes_path.exists():
+                with open(routes_path) as f:
+                    data = yaml.safe_load(f)
+                self.routes = [RouteConfig(**r) for r in data.get("routes", [])]
 
         # Windows + scraping thresholds
-        windows_path = _CONFIG_DIR / "windows.yaml"
-        if windows_path.exists():
-            with open(windows_path) as f:
-                data = yaml.safe_load(f)
-            self.windows = [WindowConfig(**w) for w in data.get("windows", [])]
-            if "scraping" in data:
-                self.scraping = ScrapingConfig(**data["scraping"])
+        if not self.windows:
+            windows_path = _CONFIG_DIR / "windows.yaml"
+            if windows_path.exists():
+                with open(windows_path) as f:
+                    data = yaml.safe_load(f)
+                self.windows = [WindowConfig(**w) for w in data.get("windows", [])]
+                if "scraping" in data and not hasattr(self, "_scraping_custom_set"):
+                    self.scraping = ScrapingConfig(**data["scraping"])
 
         # Per-source selectors (one YAML per source in selectors/ dir)
         selectors_dir = _CONFIG_DIR / "selectors"
