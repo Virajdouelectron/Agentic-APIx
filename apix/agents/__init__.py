@@ -9,6 +9,7 @@ Houses the 5 cooperating agents:
 5. Server: FastAPI application and serving endpoints
 """
 
+from apix.agents.harmonizer import HarmonizationResult, Harmonizer
 from apix.agents.orchestrator import Orchestrator, ProxyPool
 
-__all__ = ["Orchestrator", "ProxyPool"]
+__all__ = ["HarmonizationResult", "Harmonizer", "Orchestrator", "ProxyPool"]
