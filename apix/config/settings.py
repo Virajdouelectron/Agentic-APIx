@@ -117,6 +117,18 @@ class Settings(BaseSettings):
     scraping: ScrapingConfig = ScrapingConfig()
     source_selectors: dict[str, SourceSelectors] = {}
 
+    def __init__(self, **values: Any) -> None:
+        custom_scraping = values.get("scraping")
+        custom_routes = values.get("routes")
+        custom_windows = values.get("windows")
+        super().__init__(**values)
+        if custom_scraping is not None:
+            self.scraping = custom_scraping
+        if custom_routes is not None:
+            self.routes = custom_routes
+        if custom_windows is not None:
+            self.windows = custom_windows
+
     def model_post_init(self, __context: Any) -> None:
         """Load YAML configs after env vars are resolved."""
         self._load_yaml_configs()
@@ -132,14 +144,14 @@ class Settings(BaseSettings):
                 self.routes = [RouteConfig(**r) for r in data.get("routes", [])]
 
         # Windows + scraping thresholds
-        if not self.windows:
-            windows_path = _CONFIG_DIR / "windows.yaml"
-            if windows_path.exists():
-                with open(windows_path) as f:
-                    data = yaml.safe_load(f)
+        windows_path = _CONFIG_DIR / "windows.yaml"
+        if windows_path.exists():
+            with open(windows_path) as f:
+                data = yaml.safe_load(f)
+            if not self.windows:
                 self.windows = [WindowConfig(**w) for w in data.get("windows", [])]
-                if "scraping" in data and not hasattr(self, "_scraping_custom_set"):
-                    self.scraping = ScrapingConfig(**data["scraping"])
+            if "scraping" in data:
+                self.scraping = ScrapingConfig(**data["scraping"])
 
         # Per-source selectors (one YAML per source in selectors/ dir)
         selectors_dir = _CONFIG_DIR / "selectors"
