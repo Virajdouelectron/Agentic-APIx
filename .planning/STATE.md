@@ -2,8 +2,8 @@
 
 ## Current Position
 - **Milestone**: M1 — Core Pipeline (MVP)
-- **Phase**: Phase 1 Complete (Foundation) — ready for Phase 2 (Extraction Layer)
-- **Last Action**: Completed Phase 1 (Config, Pydantic schemas, SQLAlchemy models, Docker infra, exceptions, tests)
+- **Phase**: Phase 3 Complete (Orchestrator) — ready for Phase 4 (Harmonization & Anomaly Agent)
+- **Last Action**: Completed Phase 3 (Orchestrator, ProxyPool, concurrency control, exponential backoff, retry management, run summary)
 
 ## Decision Log
 
