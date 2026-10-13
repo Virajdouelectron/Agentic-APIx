@@ -19,9 +19,10 @@ import pandas as pd
 from apix.dashboard.data_loader import (
     API_BASE_URL,
     check_api_health,
-    fetch_index_data,
-    fetch_route_index,
     fetch_elasticity_data,
+    fetch_index_data,
+    fetch_kpi_metrics,
+    fetch_route_index,
     generate_mock_sector_matrix,
 )
 
@@ -32,6 +33,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
 
 # Custom CSS for dark glassmorphism styling
 st.markdown(
@@ -117,26 +119,50 @@ def main():
         "volatility, sector dispersion, and lead-time elasticity across Indian domestic aviation."
     )
 
+    daily_data = fetch_index_data(base_url=backend_url, freq="daily")
+    elast_df = fetch_elasticity_data(base_url=backend_url)
+    metrics = fetch_kpi_metrics(base_url=backend_url, daily_df=daily_data, elast_df=elast_df)
+    is_live = metrics.get("is_live", False)
+
+    # ── Visual Source Flag Banner (Live vs Synthetic) ─────────────────────────
+    if is_live:
+        st.markdown(
+            """
+            <div style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 6px 14px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.5); border-radius: 20px;">
+                <span style="color: #10b981; font-size: 0.9rem;">●</span>
+                <span style="color: #34d399; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.05em;">DATA SOURCE: LIVE BACKEND PERSISTENCE</span>
+                <span style="color: #94a3b8; font-size: 0.8rem;">(Live database metrics active)</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            """
+            <div style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 6px 14px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.5); border-radius: 20px;">
+                <span style="color: #f59e0b; font-size: 0.9rem;">▲</span>
+                <span style="color: #fbbf24; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.05em;">DATA SOURCE: SYNTHETIC DEMO SIMULATION</span>
+                <span style="color: #94a3b8; font-size: 0.8rem;">(Database offline — metrics computed from high-fidelity mock stream)</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
     # ── KPI Header Cards ──────────────────────────────────────────────────────
     col1, col2, col3, col4 = st.columns(4)
-
-    daily_data = fetch_index_data(base_url=backend_url, freq="daily")
-    latest_val = 104.2
-    pct_change = "+4.2%"
-    if not daily_data.empty and "index_value" in daily_data.columns:
-        latest_val = float(daily_data.iloc[-1]["index_value"])
-        if len(daily_data) > 1:
-            first_val = float(daily_data.iloc[0]["index_value"])
-            delta = ((latest_val - first_val) / first_val) * 100
-            pct_change = f"{delta:+.1f}% vs Start"
+    badge_html = (
+        '<span style="float: right; font-size: 0.65rem; padding: 2px 7px; border-radius: 6px; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); font-weight: 700;">LIVE</span>'
+        if is_live
+        else '<span style="float: right; font-size: 0.65rem; padding: 2px 7px; border-radius: 6px; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); font-weight: 700;">SYNTHETIC</span>'
+    )
 
     with col1:
         st.markdown(
             f"""
             <div class="metric-card">
-                <div class="metric-label">Current APIx Index</div>
-                <div class="metric-value">{latest_val:.1f}</div>
-                <div class="metric-delta">{pct_change} (Base: 100.0)</div>
+                <div class="metric-label">Current APIx Index {badge_html}</div>
+                <div class="metric-value">{metrics["current_index"]:.1f}</div>
+                <div class="metric-delta">{metrics["index_delta"]}</div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -144,11 +170,11 @@ def main():
 
     with col2:
         st.markdown(
-            """
+            f"""
             <div class="metric-card">
-                <div class="metric-label">Metro Routes Monitored</div>
-                <div class="metric-value">30</div>
-                <div class="metric-delta">Top 6 Hubs (85% Passenger Share)</div>
+                <div class="metric-label">Metro Routes Monitored {badge_html}</div>
+                <div class="metric-value">{metrics["routes_monitored"]}</div>
+                <div class="metric-delta">{metrics["routes_delta"]}</div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -156,11 +182,11 @@ def main():
 
     with col3:
         st.markdown(
-            """
+            f"""
             <div class="metric-card">
-                <div class="metric-label">Weighted Average Fare</div>
-                <div class="metric-value">₹5,240</div>
-                <div class="metric-delta">DGCA Laspeyres Normalized</div>
+                <div class="metric-label">Weighted Average Fare {badge_html}</div>
+                <div class="metric-value">₹{metrics["weighted_avg_fare"]:,}</div>
+                <div class="metric-delta">{metrics["waf_delta"]}</div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -168,17 +194,18 @@ def main():
 
     with col4:
         st.markdown(
-            """
+            f"""
             <div class="metric-card">
-                <div class="metric-label">Anomaly Filter Rate</div>
-                <div class="metric-value">2.4%</div>
-                <div class="metric-delta">Excluded via MAD / IQR (R3.4)</div>
+                <div class="metric-label">Anomaly Filter Rate {badge_html}</div>
+                <div class="metric-value">{metrics["anomaly_filter_rate"]:.1f}%</div>
+                <div class="metric-delta">{metrics["anomaly_delta"]}</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
     st.markdown("<br>", unsafe_allow_html=True)
+
 
     # ── Tabs for Core Requirements ────────────────────────────────────────────
     tab_trends, tab_heatmaps, tab_elasticity, tab_routes = st.tabs([
