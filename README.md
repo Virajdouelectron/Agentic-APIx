@@ -37,7 +37,8 @@ graph TD
    - Fault-tolerant exponential backoff with jitter and per-route polite delays.
 2. **Extraction Agent** (`apix/agents/extraction/`):
    - Asynchronous Playwright browser automation with anti-bot evasion techniques.
-   - Dual-path parser: Fast CSS/XPath selector extraction with automated VLM (GPT-4o/Gemini) visual self-healing fallback when DOM changes.
+   - Dual-path parser: Fast CSS/XPath selector extraction across IndiGo and SpiceJet, with automated VLM (GPT-4o/Gemini) visual self-healing fallback when DOM changes.
+
 3. **Harmonizer Agent** (`apix/agents/harmonizer.py`):
    - Strict Pydantic v2 validation enforcing economic fare definitions (Base Fare + Mandatory Fuel/Airport Fees; optional OTA markups excluded).
    - Cross-source deduplication preserving cheapest fares per flight code.
