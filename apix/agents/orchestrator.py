@@ -26,9 +26,11 @@ from apscheduler.triggers.cron import CronTrigger
 
 from apix.agents.extraction.base import BaseExtractor
 from apix.agents.extraction.indigo import IndiGoExtractor
+from apix.agents.extraction.spicejet import SpiceJetExtractor
 from apix.config.settings import RouteConfig, Settings, WindowConfig, get_settings
 from apix.exceptions import BlockedBySiteError
 from apix.models.schemas import RawFarePayload, RunSummary
+
 
 logger = logging.getLogger(__name__)
 
@@ -113,10 +115,21 @@ class Orchestrator:
 
         # Default source extractors registered in the pipeline
         self.extractor_factories = extractor_factories or {
-            "indigo": lambda proxy: IndiGoExtractor(proxy_url=proxy),
+            "indigo": lambda proxy: self._get_extractor_for_source("indigo", proxy),
+            "spicejet": lambda proxy: self._get_extractor_for_source("spicejet", proxy),
         }
 
+    @staticmethod
+    def _get_extractor_for_source(source: str, proxy: Optional[str] = None) -> BaseExtractor:
+        """Factory creating extractor instance for a configured source."""
+        if source == "indigo":
+            return IndiGoExtractor(proxy_url=proxy)
+        elif source == "spicejet":
+            return SpiceJetExtractor(proxy_url=proxy)
+        raise ValueError(f"Unknown extractor source: '{source}'")
+
     def build_job_matrix(self, reference_date: Optional[date] = None) -> List[ExtractionJob]:
+
         """
         Construct all discrete extraction jobs:
         City Pairs (DGCA routes) x Lead-time Windows (T+1..T+45) x Registered Sources
