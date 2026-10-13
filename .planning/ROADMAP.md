@@ -48,7 +48,7 @@
 - `indexer.py` — DGCA-weighted index, elasticity curves
 - Well-documented methodology with explicit formulas
 - Unit tests with hand-checkable examples (`test_indexer.py`)
-**Status**: not-started
+**Status**: completed
 
 ### Phase 6: API Serving
 **Requirements**: R5.1–R5.4
@@ -57,14 +57,16 @@
 - Pydantic response models
 - Alembic migration setup
 - Health endpoint
-**Status**: not-started
+**Status**: completed
+
 
 ### Phase 7: Dashboard
 **Requirements**: R6.1–R6.4
 **Deliverables**:
 - `dashboard/app.py` — interactive dashboard
 - Sector heatmaps, APIx trend lines, elasticity curve charts
-**Status**: not-started
+**Status**: completed
+
 
 ### Phase 8: Docker, Tests & README
 **Requirements**: R7.1–R7.5
@@ -73,4 +75,5 @@
 - Complete test suite
 - README with full documentation
 - Final review and PR preparation
-**Status**: not-started
+**Status**: completed
+

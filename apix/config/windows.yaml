@@ -1,0 +1,48 @@
+# Advance-Purchase Windows & Scraping Thresholds
+#
+# The orchestrator combines each route with each window to produce
+# extraction jobs: for route DEL→BOM and window T+7, it searches
+# for flights departing 7 days from today.
+#
+# Scraping thresholds live here (not hardcoded) so operators can
+# tune them without touching Python code.
+
+# ── Lead-time windows ─────────────────────────────────────────────
+# Each window defines how far in advance we search for flights.
+# "label" is for logs/dashboards; "days" is used in date math.
+windows:
+  - label: T+1
+    days: 1
+  - label: T+7
+    days: 7
+  - label: T+15
+    days: 15
+  - label: T+30
+    days: 30
+  - label: T+45
+    days: 45
+
+# ── Scraping behaviour ───────────────────────────────────────────
+scraping:
+  # Max concurrent extraction jobs (across all sources)
+  concurrency_limit: 5
+
+  # Retries before marking a job as permanently failed
+  max_retries: 3
+
+  # Exponential backoff: delay = base * 2^attempt + jitter
+  backoff_base_seconds: 2.0
+
+  # Random jitter added to backoff to avoid thundering herd (0 to this value)
+  backoff_jitter_max_seconds: 1.5
+
+  # Polite delay between requests to the SAME source (seconds)
+  # Actual delay is uniform-random in [min, max]
+  polite_delay_min_seconds: 1.0
+  polite_delay_max_seconds: 3.0
+
+  # Page load timeout for Playwright (seconds)
+  page_timeout_seconds: 30
+
+  # How long to wait after a "blocked" response before retrying (seconds)
+  blocked_cooldown_seconds: 60
