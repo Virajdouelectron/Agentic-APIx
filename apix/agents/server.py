@@ -17,6 +17,7 @@ All query endpoints target < 500ms response time (R5.4) via:
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timezone
@@ -29,8 +30,9 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apix import __version__
-from apix.models.database import close_db, get_db, init_db
+from apix.models.database import _get_session_factory, close_db, get_db, init_db
 from apix.models.db_models import IndexRecord, FareRecord
+
 from apix.models.schemas import (
     ElasticityPoint,
     HealthResponse,
@@ -114,7 +116,7 @@ class ErrorResponse(BaseModel):
     tags=["System"],
     summary="Health check with database connectivity",
 )
-async def health_check(db: AsyncSession = Depends(get_db)) -> HealthResponse:
+async def health_check() -> HealthResponse:
     """
     Returns system health status including database connectivity.
     Used by load balancers and monitoring systems.
@@ -123,10 +125,12 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> HealthResponse:
     db_details = {}
 
     try:
-        result = await db.execute(text("SELECT 1"))
-        row = result.scalar()
-        db_connected = row == 1
-        db_details["ping"] = "ok"
+        factory = _get_session_factory()
+        async with factory() as session:
+            result = await asyncio.wait_for(session.execute(text("SELECT 1")), timeout=1.0)
+            row = result.scalar()
+            db_connected = row == 1
+            db_details["ping"] = "ok"
     except Exception as exc:
         db_details["ping"] = "failed"
         db_details["error"] = str(exc)
@@ -139,6 +143,7 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> HealthResponse:
         database_connected=db_connected,
         details=db_details,
     )
+
 
 
 # ── Index Endpoints ──────────────────────────────────────────────
