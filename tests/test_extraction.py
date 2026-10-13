@@ -18,9 +18,11 @@ import pytest
 
 from apix.agents.extraction.base import BaseExtractor
 from apix.agents.extraction.indigo import IndiGoExtractor, clean_currency_text
+from apix.agents.extraction.spicejet import SpiceJetExtractor
 from apix.agents.extraction.vlm_fallback import VLMFallbackEngine
 from apix.config.settings import RouteConfig
 from apix.exceptions import BlockedBySiteError, VLMFallbackError
+
 
 
 class DummyExtractor(BaseExtractor):
@@ -168,3 +170,71 @@ async def test_polite_delay_execution():
         assert mock_sleep.called
         delay_arg = mock_sleep.call_args[0][0]
         assert 0.01 <= delay_arg <= 0.02
+
+
+def test_spicejet_search_url_formatting():
+    """Verify SpiceJet search URL constructor."""
+    extractor = SpiceJetExtractor()
+    url = extractor.build_search_url("DEL", "BOM", date(2026, 10, 25))
+    assert "from=DEL" in url
+    assert "to=BOM" in url
+    assert "departureDate=2026-10-25" in url
+
+
+def test_spicejet_extractor_initialization_and_selectors():
+    """Verify SpiceJet extractor loads selectors from spicejet.yaml."""
+    extractor = SpiceJetExtractor()
+    assert extractor.source_name == "spicejet"
+    assert extractor.selector_config is not None
+    assert "flight_card" in extractor.selector_config.selectors
+    assert "base_fare" in extractor.selector_config.selectors
+    assert "total_fare" in extractor.selector_config.selectors
+
+
+def test_orchestrator_get_extractor_for_source():
+    """Verify Orchestrator factory creates correct extractor subclasses."""
+    from apix.agents.orchestrator import Orchestrator
+
+    indigo = Orchestrator._get_extractor_for_source("indigo")
+    assert isinstance(indigo, IndiGoExtractor)
+    assert indigo.source_name == "indigo"
+
+    spicejet = Orchestrator._get_extractor_for_source("spicejet")
+    assert isinstance(spicejet, SpiceJetExtractor)
+    assert spicejet.source_name == "spicejet"
+
+    with pytest.raises(ValueError, match="Unknown extractor source"):
+        Orchestrator._get_extractor_for_source("unknown_airline")
+
+
+@pytest.mark.asyncio
+async def test_spicejet_vlm_fallback_payload_generation():
+    """Verify SpiceJet extractor converts VLM extracted flights to RawFarePayload."""
+    extractor = SpiceJetExtractor()
+    fake_screenshot = b"fake_screenshot"
+    fake_flights = [
+        {
+            "flight_number": "SG-8169",
+            "base_fare": 4200,
+            "taxes": 650,
+            "udf": 120,
+            "convenience_fee": 250,
+        }
+    ]
+    extractor.vlm_engine.extract_fares_from_screenshot = AsyncMock(return_value=fake_flights)
+
+    route = RouteConfig(origin="DEL", destination="BOM", name="DEL-BOM", tier="metro")
+    payloads = await extractor._extract_via_vlm(
+        screenshot=fake_screenshot,
+        route=route,
+        travel_date=date(2026, 10, 25),
+        lead_time_bucket="T+7",
+        lead_time_days=7,
+    )
+    assert len(payloads) == 1
+    assert payloads[0].airline == "SpiceJet"
+    assert payloads[0].flight_number == "SG-8169"
+    assert payloads[0].fare_components.base_fare == Decimal("4200")
+    assert payloads[0].source == "spicejet"
+    assert payloads[0].raw_metadata == {"vlm_fallback": True}
+
