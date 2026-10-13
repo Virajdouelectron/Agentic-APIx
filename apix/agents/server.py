@@ -26,12 +26,13 @@ from typing import List, Optional
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from sqlalchemy import select, text
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apix import __version__
 from apix.models.database import _get_session_factory, close_db, get_db, init_db
-from apix.models.db_models import IndexRecord, FareRecord
+from apix.models.db_models import IndexRecord, FareRecord, AnomalyRecordDB
+
 
 from apix.models.schemas import (
     ElasticityPoint,
@@ -103,9 +104,19 @@ class ElasticityResponse(BaseModel):
     data: List[ElasticityPoint] = Field(description="Elasticity data points")
 
 
+class MetricsSummaryResponse(BaseModel):
+    """Aggregate KPI metrics across fares, routes, and anomalies."""
+    routes_monitored: int = Field(description="Number of unique routes actively monitored")
+    weighted_average_fare: float = Field(description="Overall weighted average fare across non-anomalous observations")
+    anomaly_filter_rate: float = Field(description="Percentage of fare observations flagged as anomalies")
+    total_fares: int = Field(description="Total valid fare observations stored")
+    anomalies_detected: int = Field(description="Total anomalous observations flagged")
+
+
 class ErrorResponse(BaseModel):
     """Standard error response envelope."""
     detail: str
+
 
 
 # ── Health Endpoint ──────────────────────────────────────────────
@@ -349,3 +360,55 @@ async def get_elasticity(
         )
 
     return ElasticityResponse(count=len(data), data=data)
+
+
+# ── Metrics Summary Endpoint ─────────────────────────────────────
+
+@app.get(
+    "/metrics/summary",
+    response_model=MetricsSummaryResponse,
+    tags=["Metrics"],
+    summary="High-level KPI metrics across routes, fares, and anomaly rates",
+)
+async def get_metrics_summary(
+    db: AsyncSession = Depends(get_db),
+) -> MetricsSummaryResponse:
+    """Return high-level summary KPI metrics for dashboards."""
+    try:
+        # Unique routes
+        routes_stmt = select(func.count(func.distinct(FareRecord.route))).where(FareRecord.is_anomaly == False)
+        routes_count = (await db.scalar(routes_stmt)) or 0
+
+        # Fares & average fare
+        fares_stmt = select(
+            func.count(FareRecord.id),
+            func.avg(FareRecord.index_fare),
+        ).where(FareRecord.is_anomaly == False)
+        fares_res = (await db.execute(fares_stmt)).first()
+        total_fares = fares_res[0] if fares_res else 0
+        avg_fare = float(fares_res[1]) if (fares_res and fares_res[1] is not None) else 0.0
+
+        # Anomalies
+        anom_stmt = select(func.count(AnomalyRecordDB.id))
+        anom_count = (await db.scalar(anom_stmt)) or 0
+
+        total_obs = total_fares + anom_count
+        anomaly_rate = round((anom_count / total_obs) * 100.0, 2) if total_obs > 0 else 0.0
+
+        return MetricsSummaryResponse(
+            routes_monitored=routes_count,
+            weighted_average_fare=round(avg_fare, 2),
+            anomaly_filter_rate=anomaly_rate,
+            total_fares=total_fares,
+            anomalies_detected=anom_count,
+        )
+    except Exception as exc:
+        logger.warning("Metrics summary query failed: %s", exc)
+        return MetricsSummaryResponse(
+            routes_monitored=0,
+            weighted_average_fare=0.0,
+            anomaly_filter_rate=0.0,
+            total_fares=0,
+            anomalies_detected=0,
+        )
+
