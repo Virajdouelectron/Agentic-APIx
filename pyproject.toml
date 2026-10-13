@@ -7,7 +7,7 @@ name = "apix"
 version = "0.1.0"
 description = "Airfare Price Index — a multi-agent pipeline for Indian domestic airfare data collection, harmonization, and economic indexing"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 requires-python = ">=3.11"
 authors = [
     {name = "Viraj"},
@@ -66,3 +66,9 @@ asyncio_mode = "auto"
 python_version = "3.11"
 strict = true
 warn_return_any = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["apix*"]
+exclude = ["alembic*", "tests*"]
+
