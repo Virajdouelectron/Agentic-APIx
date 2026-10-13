@@ -10,7 +10,7 @@ Tables:
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import List, Optional
 
@@ -31,7 +31,13 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from apix.models.schemas import AnomalyReason, IndexFrequency
 
 
+def utc_now() -> datetime:
+    """Return current timezone-aware UTC datetime."""
+    return datetime.now(timezone.utc)
+
+
 class Base(DeclarativeBase):
+
     """Base class for all SQLAlchemy 2.x declarative models."""
     pass
 
@@ -67,7 +73,7 @@ class FareRecord(Base):
     is_anomaly: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     scraped_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow
+        DateTime(timezone=True), default=utc_now
     )
 
     # Relationships
@@ -100,7 +106,7 @@ class AnomalyRecordDB(Base):
     reason_code: Mapped[AnomalyReason] = mapped_column(SQLEnum(AnomalyReason), index=True)
     details: Mapped[str] = mapped_column(Text)
     flagged_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow
+        DateTime(timezone=True), default=utc_now
     )
 
     fare_record: Mapped[Optional["FareRecord"]] = relationship(back_populates="anomalies")
@@ -121,7 +127,7 @@ class IndexRecord(Base):
     passenger_weight_version: Mapped[str] = mapped_column(String(16), default="v1")
     sample_size: Mapped[int] = mapped_column(Integer, default=0)
     calculated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow
+        DateTime(timezone=True), default=utc_now
     )
 
     __table_args__ = (
