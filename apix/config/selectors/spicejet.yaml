@@ -1,0 +1,87 @@
+# SpiceJet Fare Page Selectors
+#
+# Externalized CSS/XPath selectors for SpiceJet (SG) domestic flight search.
+# When markup drifts, the extractor falls back to VLM-based visual extraction.
+
+source: spicejet
+base_url: https://www.spicejet.com
+
+selectors:
+  # ── Flight list container ───────────────────────────────────────
+  flight_list:
+    type: css
+    value: "div[data-testid='flights-wrapper'], div.flight-list-container, div.css-1dbjc4n"
+    description: Container holding all SpiceJet flight result cards
+    fallback_enabled: true
+
+  # ── Individual flight card ──────────────────────────────────────
+  flight_card:
+    type: css
+    value: "div[data-testid='flight-card'], div.flight-card-container, div.css-1dbjc4n[data-testid*='flight']"
+    description: A single flight option within the search results
+    fallback_enabled: true
+
+  # ── Fare components ────────────────────────────────────────────
+  base_fare:
+    type: css
+    value: "span[data-testid='base-fare-price'], span.base-fare-amount, span[class*='baseFare']"
+    description: Base fare amount in INR
+    fallback_enabled: true
+
+  taxes:
+    type: css
+    value: "span[data-testid='tax-price'], span.tax-amount, span[class*='taxPrice']"
+    description: Government taxes and airline fuel surcharges
+    fallback_enabled: true
+
+  udf:
+    type: css
+    value: "span[data-testid='udf-price'], span.udf-amount"
+    description: User Development Fee
+    fallback_enabled: true
+
+  convenience_fee:
+    type: css
+    value: "span[data-testid='convenience-price'], span.convenience-fee"
+    description: Booking / convenience fee
+    fallback_enabled: true
+
+  total_fare:
+    type: css
+    value: "span[data-testid='total-price'], span.total-fare-amount, div[class*='fare-summary'] span"
+    description: Total displayed fare
+    fallback_enabled: true
+
+  # ── Flight metadata ────────────────────────────────────────────
+  flight_number:
+    type: css
+    value: "span[data-testid='flight-number'], div.flight-number, span[class*='flightNumber']"
+    description: Flight identifier (e.g., SG-8169)
+    fallback_enabled: false
+
+  departure_time:
+    type: css
+    value: "span[data-testid='departure-time'], div.departure-time"
+    description: Departure time (HH:MM format)
+    fallback_enabled: false
+
+  arrival_time:
+    type: css
+    value: "span[data-testid='arrival-time'], div.arrival-time"
+    description: Arrival time (HH:MM format)
+    fallback_enabled: false
+
+  airline_name:
+    type: css
+    value: "span.airline-name, img[alt*='SpiceJet']"
+    description: Airline branding or logo
+    fallback_enabled: false
+
+# ── VLM fallback prompts ─────────────────────────────────────────
+vlm_prompts:
+  fare_extraction: >
+    Look at this SpiceJet flight search results screenshot. For each flight shown,
+    extract: flight number, departure time, arrival time, base fare amount,
+    taxes amount, user development fee (UDF), and convenience fee.
+    Return the data as a JSON array. All amounts should be numbers in INR.
+    If a component is not visible, set it to null.
